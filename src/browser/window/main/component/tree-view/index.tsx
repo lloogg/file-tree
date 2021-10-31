@@ -7,77 +7,74 @@ import {
   useRef,
   useState,
 } from 'react';
-import { treeStore } from '../../store';
+import fs from 'fs';
 
 const data = ['b', 'c', 'c', 'd', 'e'];
 const TreeView = () => {
-  return (
-    // <TreeItem
-    //   data={{
-    //     value: 'a',
-    //     collapse: false,
-    //     children: [
-    //       { value: 'b' },
-    //       {
-    //         value: 'c',
-    //         children: [
-    //           { value: 'd' },
-    //           {
-    //             value: 'e',
-    //             collapse: true,
-    //             children: [{ value: 'f' }, { value: 'g' }],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //   }}
-    // />
-    <TreeItem value="a" />
-  );
+  return <TreeItem value="a" />;
 };
 
 const TreeItem = ({ value }: { value: string }) => {
-  // let dataSize = useRef(Math.floor(Math.random() * 5));
-  let dataSize = useRef(Math.floor(Math.random() * 2));
-  let data = useRef([]);
-  for (let i = 0; i < dataSize.current; i++) {
-    data.current.push('randomString');
-  }
+  // let dataSize = useRef(Math.floor(Math.random() * 2));
+  // let data = useRef([]);
+  let isFolder = useRef<boolean>(Math.random() < 0.5);
+  let isOpen = useRef<boolean>(false);
+
+  // for (let i = 0; i < dataSize.current; i++) {
+  //   data.current.push('randomString');
+  // }
+
+  // 渲染之前，判断是文件还是文件夹，通过 fs.statSync
+  // 这个 stat 根据实际情况，可以用 ref 存储起来
+  // let stat = fs.statSync()
   const [children, setChildren] = useState([]);
   const ul = useRef<HTMLUListElement>(null);
-  useEffect(() => {
-    if (ul.current) {
-      ul.current.addEventListener(
-        'click',
-        () => {
-          if (data.current.length !== 0) {
-            setChildren(data.current);
-          }
-        },
-        { once: true },
-      );
-    }
-  }, []);
-  if (data.current.length !== 0) {
+  // useEffect(() => {
+  //   if (ul.current) {
+  //     ul.current.addEventListener(
+  //       'click',
+  //       () => {
+  //         // if (data.current.length !== 0) {
+  //         //   setChildren(data.current);
+  //         // }
+  //       },
+  //       { once: true },
+  //     );
+  //   }
+  // }, []);
+  if (isFolder.current) {
     return (
-      <>
-        <ul
-          ref={ul}
-          onClick={() => {
-            setChildren(data.current);
-          }}
-        >
-          folder
-          {children &&
-            children.map((child) => {
-              return (
-                <li>
-                  <TreeItem value={child} />
-                </li>
-              );
-            })}
-        </ul>
-      </>
+      <ul
+        ref={ul}
+        onClick={() => {
+          // setChildren(data.current);
+          console.log('clicked');
+          console.log(isOpen);
+          if (isOpen.current) {
+            setChildren([]);
+            isOpen.current = false;
+          } else {
+            let dataSize = Math.floor(Math.random() * 4);
+            let data = [];
+            for (let i = 0; i < dataSize; i++) {
+              data.push('randomString');
+            }
+            console.log(data);
+            setChildren(data);
+            isOpen.current = true;
+          }
+        }}
+      >
+        folder
+        {children &&
+          children.map((child, i) => {
+            return (
+              <li key={i}>
+                <TreeItem value={child} />
+              </li>
+            );
+          })}
+      </ul>
     );
   } else {
     return <>file</>;
